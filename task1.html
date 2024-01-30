@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0 shrink-to-fit=no"
+    />
+    <title>Data Capture Form</title>
+    <!-- Bootstrap CSS link -->
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+
+    <!-- Bootstrap DatePicker CSS link -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css"
+    />
+    <style>
+      /* Add any custom styles here */
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        background-color: #f8f9fa;
+      }
+      .form-container {
+        max-width: 400px;
+        width: 100%;
+        padding: 20px;
+        border: 1px solid #ced4da;
+        border-radius: 10px;
+        background-color: #fff;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+      .message-display {
+        margin: 10px 0px;
+        display: flex;
+        font-size: 20px;
+        font-weight: 600;
+        justify-content: center;
+      }
+      .error-message {
+        color: red;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="form-container">
+      <!-- Display the message in the form -->
+      <div id="message" class="message-display"></div>
+
+      <!-- Form title -->
+      <h2>User Registration Form</h2>
+
+      <!-- User form -->
+      <form id="userForm" class="needs-validation" novalidate>
+        <div class="form-group">
+          <label for="name">Name:</label>
+          <input
+            type="text"
+            class="form-control"
+            id="name"
+            name="name"
+            required
+          />
+          <div class="error-message" id="nameError"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="surname">Surname:</label>
+          <input
+            type="text"
+            class="form-control"
+            id="surname"
+            name="surname"
+            required
+          />
+          <div class="error-message" id="surnameError"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="idNumber">ID Number:</label>
+          <input
+            type="text"
+            class="form-control"
+            id="idNumber"
+            name="idNumber"
+            required
+          />
+          <div class="error-message" id="idNumberError"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="dob">Date of Birth:</label>
+          <input
+            type="text"
+            class="form-control datepicker"
+            id="dob"
+            name="dob"
+            required
+            placeholder="DD/MM/YYYY"
+          />
+          <div class="error-message" id="dobError"></div>
+        </div>
+
+        <div class="d-flex justify-content-between">
+          <button type="button" class="btn btn-primary" onclick="postData()">
+            POST
+          </button>
+          <button
+            type="button"
+            class="btn btn-secondary"
+            onclick="cancelForm()"
+          >
+            CANCEL
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <!-- Bootstrap DatePicker JS script -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+
+    <script>
+      // JavaScript for initializing DatePicker
+      $(document).ready(function () {
+        $(".datepicker").datepicker({
+          format: "dd/mm/yyyy",
+          autoclose: true,
+        });
+      });
+
+      (function () {
+        "use strict";
+
+        // Fetch all the forms we want to apply custom Bootstrap validation styles to
+        var forms = document.querySelectorAll(".needs-validation");
+
+        // Loop over them and prevent submission
+        Array.from(forms).forEach(function (form) {
+          form.addEventListener(
+            "submit",
+            function (event) {
+              if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+              }
+
+              form.classList.add("was-validated");
+            },
+            false
+          );
+        });
+      })();
+
+      function cancelForm() {
+        // logic to reset the form.
+        document.getElementById("userForm").reset();
+        clearErrorMessages();
+      }
+
+      // JavaScript for form validation and submission
+      function postData() {
+        // Fetch values from form fields
+        const name = document.getElementById("name").value;
+        const surname = document.getElementById("surname").value;
+        const idNumber = document.getElementById("idNumber").value;
+        const dob = document.getElementById("dob").value;
+
+        // Clear previous error messages
+        clearErrorMessages();
+
+        if (!validateName(name, "name")) {
+          // Display an error message
+          return false;
+        }
+
+        if (name.trim() === "") {
+          // Display an error message
+          displayErrorMessage("name", "Please enter a name.");
+          return false;
+        }
+
+        if (surname.trim() === "") {
+          // Display an error message
+          displayErrorMessage("surname", "Please enter a surname.");
+          return false;
+        }
+
+        // Perform client-side validation
+        if (
+          !validateIdNumber(idNumber, "idNumber") ||
+          !validateDateOfBirth(dob, "dob")
+        ) {
+          return;
+        }
+
+        // Prepare data for submission
+        const data = {
+          name: name,
+          surname: surname,
+          idNumber: idNumber,
+          dob: dob,
+        };
+
+        // Make an AJAX request to PHP script
+        fetch("dbconnection.php", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            // Display the result message
+            const messageElement = document.getElementById("message");
+
+            if (data.status === "success") {
+              messageElement.style.color = "green";
+            } else {
+              messageElement.style.color = "red";
+            }
+
+            messageElement.innerHTML = data.message;
+
+            // Clear the form after successful submission
+            if (data.status === "success") {
+              document.getElementById("userForm").reset();
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
+      }
+
+      function displayErrorMessage(fieldId, message) {
+        console.log(fieldId, "fieldid");
+        // Display an error message next to the specified form field
+        const errorElement = document.getElementById(fieldId + "Error");
+        console.log(errorElement, "fieldid");
+
+        errorElement.innerHTML = message;
+      }
+
+      function clearErrorMessages() {
+        // Clear all error messages
+        const errorElements = document.querySelectorAll(".error-message");
+        errorElements.forEach((element) => {
+          element.innerHTML = "";
+        });
+      }
+
+      function validateName(name, errorFieldId) {
+        // Validate Name (Only alphabets)
+        if (/^[A-Za-z]+$/.test(name)) {
+          return true;
+        } else {
+          displayErrorMessage(
+            errorFieldId,
+            "Invalid Name. Please enter only alphabets."
+          );
+          return false;
+        }
+      }
+
+      function validateIdNumber(idNumber, errorFieldId) {
+        console.log(errorFieldId, "errorFieldId");
+        // Validate ID Number (Example: 13 characters, numeric)
+        if (/^\d{13}$/.test(idNumber)) {
+          return true;
+        } else {
+          displayErrorMessage(
+            errorFieldId,
+            "Invalid ID Number. It should be a 13-digit numeric value."
+          );
+          return false;
+        }
+      }
+
+      function validateDateOfBirth(dob, errorFieldId) {
+        // Validate Date of Birth (Example: dd/mm/YYYY)
+        if (/^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/\d{4}$/.test(dob)) {
+          return true;
+        } else {
+          displayErrorMessage(
+            errorFieldId,
+            "Invalid Date of Birth. Please use the format dd/mm/YYYY."
+          );
+          return false;
+        }
+      }
+    </script>
+  </body>
+</html>
