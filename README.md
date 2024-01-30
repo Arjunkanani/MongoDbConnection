@@ -12,6 +12,8 @@ Following are the form details which user needs to add for Registration
 
 > Here, Cancel button is used to reset the form fields
 
+
+
 For best practice, to use this form we would suggest to use following configurations
 
 1. Mongo DB version - 6.0.6
